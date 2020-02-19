@@ -1,21 +1,27 @@
 #include <iostream>
+#include <fstream>
 
 using namespace std;
 
 char winCheck();
 void welcomeScreen();
-bool endOfGame();
+bool draw();
+void reset();
 
-int position=20,nums[9]={1,2,3,4,5,6,7,8,9}; //position is the input of user here initialized to 20 to allow the while loop to begin
-                                             //nums is array holding the map(grid) positions
-bool x=true,printed[9];                      //x is boolean specifying the turn x or o, printed is boolean array helping is specifying what to print
-char xo[9],player;                           //array to record the inputs
+int position,nums[9]={1,2,3,4,5,6,7,8,9}; //nums is array holding the map(grid) positions
+bool x=true,printed[9];                      //x is boolean specifying the turn x or o, printed is boolean array helping in specifying what to print
+char xo[9],player,answer;                           //array to record the inputs
 
 int main() {
-    while(position!=0){
+    while(1){
+        #ifdef unix     //for unix like os
         system("clear");
+        #else           //for windows
+        system("cls");
+        #endif
         welcomeScreen();
         int index=0;
+        cout<<"\n\n\n\n";
         for (int i=0;i<3;i++){                                              //y dimension
             for (int j=0;j<13;j++){                                         //x dimension
                 if(j==0||j==4||j==8||j==12)                                 //borders positions
@@ -45,21 +51,30 @@ int main() {
         }
         if(winCheck()=='X'||winCheck()=='O'){                               //checking if there was a win 
             cout<<winCheck()<<" wins\n";                                      //if so prints who won
-            break;                                                          //breaking the loop and ending the game
+            cout<<"Wanna play again? [y/n]\n";
+            cin>>answer;
+            if (answer == 'n')
+                break;
+            reset();
+            continue;
         }
-        if(winCheck()=='d'){
+        else if(winCheck()=='d'){
             cout<<"Draw\n";
-            break;
+            cout<<"Wanna play again? [y/n]\n";
+            cin>>answer;
+            if (answer == 'n')
+                break;
+            reset();
+            continue;
         }
             
         player=(x==true)?'X':'O';
-        cout<<player<<": which position you want to play?(from 1 to 9)\t(type 0 to exit)\n";
+        cout<<"player \""<<player<<"\": which position you want to play?(from 1 to 9)\n";
                                                                             //if there wasn't a win asking the player to choose position
         cin>>position;                                                      //getting position
-        if(position==0)
-            break;
-        if(position<0||position>9)
+        if(position<0||position>9||nums[position-1]==10){
             continue;
+        }
         nums[position-1]=10;                                                //recording input position by canceling the existance of a valid position number
         if(x!=true)                                                         //if the last input wasn't X
             xo[position-1]='O';                                             //put the input as O
@@ -82,23 +97,39 @@ char winCheck(){
             return xo[3];
         if(xo[6]==xo[7]&&xo[6]==xo[8])                                                              //win cases
             return xo[6];
-        if(endOfGame())
+        if(draw())
             return 'd';
         return '\0';                                                                                //returning null if there wasn't any win
     }
 }
 
 void welcomeScreen(){
-    cout<<"Welcome to CLI Tic Tac Toe\n";
-    for(int i=0;i<26;i++)
-        cout<<"-";
-    cout<<'\n';
+    ifstream file ("logo_ascii.txt");
+    if(!file.is_open())
+        cout<<"Welcome to Console Tic Tac Toe\n------------------------------\n";
+    else {
+        string line;
+        while (getline(file, line))
+        {
+            cout<<line<<'\n';
+        }
+        
+    }
 }
 
-bool endOfGame(){
+bool draw(){
     for(int i=0;i<9;i++){
         if(!xo[i])
             return false;
     }
     return true;
+}
+
+void reset(){
+    for (int i = 0; i < 9; i++)
+    {
+        xo[i]='\0';
+        nums[i]=i+1;
+    }
+    
 }
